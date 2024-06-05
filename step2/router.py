@@ -6,8 +6,10 @@ from schemas import STask, STaskAdd, STaskId
 #     id: int
 
 router = APIRouter(
-    prefix = "/tasks",
+    prefix = "/tasks", 
     tags = ["Таски"],
+    # prefix = "/login",
+    # tags = ["login"],
 )
 
 @router.post("", response_model=STaskId)    
@@ -20,3 +22,6 @@ async def get_tasks() -> list[STask]:
     tasks = await TaskRepository.get_tasks()
     return tasks
 
+@router.post("/login")
+async def login():
+    return "hi"

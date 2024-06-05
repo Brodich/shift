@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     await create_tables()
     print("База готова")
     yield
-    await delete_tables()
+    # await delete_tables()
     print("База очищена")
 
 app = FastAPI(lifespan=lifespan)
@@ -30,10 +30,17 @@ app.include_router(tasks_router)
 #     model_config = ConfigDict(from_attributes=True)
     
 
-@app.post("/")
-async def add_task(task: STaskAdd = Depends()):
-    return {"data": task}
+# @app.post("/")
+# async def add_task(task: STaskAdd = Depends()):
+#     return {"data": task}
 
+@app.get("/")
+async def home():
+    return {"data": "Hello World"}
+
+@app.get("/")
+async def bbbb():
+    return {"data": "gav"}
 
 # employee = {
 #     "Alex": {
@@ -47,16 +54,14 @@ async def add_task(task: STaskAdd = Depends()):
 # curl -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username": "john_doe", "password": "password123"}'
 
 
-# @app.get("/")
-# async def home():
-#     return {"data": "Hello World"}
     
-@app.route("/login", methods=['POST'])
-async def login():
-    data = request.get_json()
-    login = data.get("login")
-    password = data.get("password")
-    return jsonify(login + password)
+# @app.route("/login", methods=['GET'])
+# async def login():
+#     return {"data": "gav"}
+    # data = request.get_json()
+    # login = data.get("login")
+    # password = data.get("password")
+    # return jsonify(login + password)
     
 
 
