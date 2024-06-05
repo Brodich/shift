@@ -1,21 +1,33 @@
 from fastapi import FastAPI
 from fastapi import Depends
+from pydantic import BaseModel, ConfigDict
 
-from pydantic import BaseModel
 from database import *
-from valid import *
+from schemas import *
+from router import router as tasks_router
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from database import create_tables, delete_tables
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_tables()
+    print("База готова")
+    yield
+    await delete_tables()
+    print("База очищена")
 
-class STaskAdd(BaseModel):
-    name: str
-    description: str | None = None
+app = FastAPI(lifespan=lifespan)
+app.include_router(tasks_router)
 
-class STask(STaskAdd):
-    id: int
-    
-    # model_config = ConfigDict(from_attributes=True)
+# class STaskAdd(BaseModel):
+#     name: str
+#     description: str | None = None
+
+# class STask(STaskAdd):
+#     id: int
+#     model_config = ConfigDict(from_attributes=True)
     
 
 @app.post("/")
@@ -23,14 +35,14 @@ async def add_task(task: STaskAdd = Depends()):
     return {"data": task}
 
 
-employee = {
-    "Alex": {
-        "password": "dontgooglegitler34",
-        "salary": 60000,
-        "date_raise": "20-03-2024"
-    }
-    # {"login": "Alex", "password": "dontgooglegitler34", "salary": 60000, "date_raise": "20-03-2024"}
-}
+# employee = {
+#     "Alex": {
+#         "password": "dontgooglegitler34",
+#         "salary": 60000,
+#         "date_raise": "20-03-2024"
+#     }
+#     # {"login": "Alex", "password": "dontgooglegitler34", "salary": 60000, "date_raise": "20-03-2024"}
+# }
 
 # curl -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username": "john_doe", "password": "password123"}'
 
