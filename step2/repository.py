@@ -8,7 +8,7 @@ class TaskRepository:
     async def add_task(cls, task: STaskAdd) -> int:
         async with new_session() as session:
             # data = task.model_dump()
-            data = task.dict()
+            data = task.model_dump()
             new_task = TaskOrm(**data)
             session.add(new_task)
             await session.flush()
@@ -27,20 +27,21 @@ class TaskRepository:
     @classmethod
     async def add_user(cls, user: SUserAdd) -> int:
         async with new_session() as session:
-            data = user.dict()
+            data = user.model_dump()
             new_user = UserOrm(**data)
             session.add(new_user)
             await session.flush()
             await session.commit()
+            print(session)
             return new_user.id
 
 
     @classmethod
     async def get_users(cls) -> list[SUser]:
         async with new_session() as session:
-            # query = select(UserOrm)
+            query = select(UserOrm)
 
-            query = text("select * from users")
+            # query = text("select * from users")
             result = await session.execute(query) # тут падает 
             users_models = result.scalars().all()
             users = [SUser.model_validate(user_model) for user_model in users_models]
