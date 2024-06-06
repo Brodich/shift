@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from repository import TaskRepository
-from schemas import STask, STaskAdd, STaskId
+from schemas import STask, STaskAdd, STaskId, SUser, SUserAdd, SUserId
 
 # class STaskId(BaseModel):
 #     id: int
@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 @router.post("", response_model=STaskId)    
-async def add_task(task: STaskAdd) -> STaskId:
+async def add_task(task: STaskAdd = Depends()) -> STaskId:
     new_task_id = await TaskRepository.add_task(task)
     return {"id": new_task_id}
 
@@ -22,6 +22,20 @@ async def get_tasks() -> list[STask]:
     tasks = await TaskRepository.get_tasks()
     return tasks
 
+@router.post("/add_user")
+async def add_user(user: SUserAdd = Depends()) -> SUserId:
+    # data = await request.json()
+    new_user_id = await TaskRepository.add_user(user)
+    return {"id": new_user_id}
+
+@router.get("/add_user", response_model=list[SUser])
+async def get_users() -> list[SUser]:
+    # print("aboba")
+    users = await TaskRepository.get_users()
+    return users
+
 @router.post("/login")
-async def login():
-    return "hi"
+async def login(request: Request):
+    data = await request.json()
+    token = await TaskRepository.login(data)
+    return token

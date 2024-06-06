@@ -17,8 +17,21 @@ class TaskOrm(Model):
     name: Mapped[str]
     description: Mapped[str | None]
 
-engine = create_async_engine("sqlite+aiosqlite:///tasks.db")
+class UserOrm(Model):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    login: Mapped[str] 
+    password: Mapped[str]
+    salary: Mapped[int]
+    next_raise_date: Mapped[str]
+
+engine = create_async_engine("sqlite+aiosqlite:///users.db")
 new_session = async_sessionmaker(engine, expire_on_commit=False)
+
+Base = DeclarativeBase()
+
+# Base.metadata.create_all(bind=engine)
+
 
 async def create_tables():
     async with engine.begin() as conn:
@@ -28,5 +41,6 @@ async def delete_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Model.metadata.drop_all)
 
+# Base.metadata.create_all(bind=engine)
 
 
