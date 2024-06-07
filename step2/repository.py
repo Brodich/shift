@@ -1,6 +1,8 @@
 from sqlalchemy import select, text
 from database import TaskOrm, UserOrm, new_session
 from schemas import STaskAdd, STask, SUser, SUserAdd
+
+from sqlalchemy.ext.asyncio import AsyncSession
 # from sayffer import STaskAdd, STask
 
 class TaskRepository:
@@ -25,15 +27,15 @@ class TaskRepository:
             return tasks
 
     @classmethod
-    async def add_user(cls, user: SUserAdd) -> int:
+    async def add_user(cls, user: SUserAdd) -> SUser:
         async with new_session() as session:
-            data = user.model_dump()
+            data = user.model_dump(mode='json')
             new_user = UserOrm(**data)
             session.add(new_user)
             await session.flush()
             await session.commit()
-            print(session)
-            return new_user.id
+            # print(session)
+            return new_user
 
 
     @classmethod

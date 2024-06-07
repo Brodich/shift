@@ -22,11 +22,11 @@ async def get_tasks() -> list[STask]:
     tasks = await TaskRepository.get_tasks()
     return tasks
 
-@router.post("/add_user")
-async def add_user(user: SUserAdd = Depends()) -> SUserId:
+@router.post("/add_user", response_model=SUser)
+async def add_user(user: SUserAdd = Depends()) -> SUser:
     # data = await request.json()
-    new_user_id = await TaskRepository.add_user(user)
-    return {"id": new_user_id}
+    new_user = await TaskRepository.add_user(user)
+    return new_user
 
 @router.get("/add_user", response_model=list[SUser])
 async def get_users() -> list[SUser]:
