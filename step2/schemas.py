@@ -25,6 +25,12 @@ class SUser(SUserAdd):
 
 class SUserId(BaseModel):
     id: int
+
+
+class SLoginData(BaseModel):
+    login: str
+    password: str
+
 # @app.post("/")
 # async def add_task(task: STaskAdd):
 #     return {"data": task}

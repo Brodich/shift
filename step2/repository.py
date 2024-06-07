@@ -1,8 +1,13 @@
+from fastapi import HTTPException
+import datetime
+
 from sqlalchemy import select, text
 from database import TaskOrm, UserOrm, new_session
-from schemas import STaskAdd, STask, SUser, SUserAdd
+from schemas import STaskAdd, STask, SUser, SUserAdd, SLoginData
+from config import Config
 
 from sqlalchemy.ext.asyncio import AsyncSession
+import jwt
 # from sayffer import STaskAdd, STask
 
 class TaskRepository:
@@ -44,7 +49,7 @@ class TaskRepository:
             query = select(UserOrm)
 
             # query = text("select * from users")
-            result = await session.execute(query) # тут падает 
+            result = await session.execute(query)
             users_models = result.scalars().all()
             users = [SUser.model_validate(user_model) for user_model in users_models]
             # print("aaaaaaaaa")
@@ -57,13 +62,25 @@ class TaskRepository:
             return users
 
     @classmethod
-    async def login(cls, data: dict):
-        login = data["login"]
-        password = data["password"]
+    async def login(cls, login_data: SLoginData) -> str:
+        login = login_data.login
+        password = login_data.password
+        async with new_session() as session:
+            query = select(UserOrm).where(
+                (UserOrm.login == login) 
+                & (UserOrm.password == password))
 
-        # data = request.get_json()
-
-        print(data)
-        return data["login"]
+            result = await session.execute(query)
+            users_models = result.scalars().all()
+            user = [SUser.model_validate(user_model) for user_model in users_models]
+            # print(user)
+            if user == []:
+                raise HTTPException(status_code=401, detail="Incorrect login or password")
+            payload = {
+                "login": login,
+                "expires": (datetime.datetime.utcnow() + datetime.timedelta(minutes=Config.JWT_EXPIRATION_DELTA)).isoformat()
+            }
+            token = jwt.encode(payload, Config.SECRET_KEY, algorithm="HS256")
+        return token
 
 

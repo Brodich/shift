@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Body, Query
 from repository import TaskRepository
-from schemas import STask, STaskAdd, STaskId, SUser, SUserAdd, SUserId
+from schemas import STask, STaskAdd, STaskId, SUser, SUserAdd, SUserId, SLoginData
+from typing import Optional
 
 # class STaskId(BaseModel):
 #     id: int
@@ -22,6 +23,12 @@ async def get_tasks() -> list[STask]:
     tasks = await TaskRepository.get_tasks()
     return tasks
 
+# If you want send data through body 
+# async def add_user(user: SUserAdd = Body(...) ) -> SUser:
+
+# If you want send data through header  
+# async def add_user(user: SUserAdd = Depends() ) -> SUser:
+
 @router.post("/add_user", response_model=SUser)
 async def add_user(user: SUserAdd = Depends()) -> SUser:
     # data = await request.json()
@@ -35,7 +42,11 @@ async def get_users() -> list[SUser]:
     return users
 
 @router.post("/login")
-async def login(request: Request):
-    data = await request.json()
-    token = await TaskRepository.login(data)
-    return token
+async def login(login_data: SLoginData = Depends()):
+    
+    # data = await request.json()
+    token = await TaskRepository.login(login_data)
+    return {"token": token}
+
+# @router.get("/salary")
+
