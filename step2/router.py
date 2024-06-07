@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Body, Query
+from fastapi import APIRouter, Depends, Request, Body, Header, Query
 from repository import TaskRepository
 from schemas import STask, STaskAdd, STaskId, SUser, SUserAdd, SUserId, SLoginData
 from typing import Optional
@@ -43,10 +43,12 @@ async def get_users() -> list[SUser]:
 
 @router.post("/login")
 async def login(login_data: SLoginData = Depends()):
-    
-    # data = await request.json()
     token = await TaskRepository.login(login_data)
     return {"token": token}
 
-# @router.get("/salary")
+@router.get("/salary")
+async def get_salary(token: str = Header(...)):
+    print(token)
+    data = await TaskRepository.get_salary(token)
+    return data
 

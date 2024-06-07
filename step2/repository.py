@@ -83,4 +83,16 @@ class TaskRepository:
             token = jwt.encode(payload, Config.SECRET_KEY, algorithm="HS256")
         return token
 
+#    For example:
+
+#      GET /resource HTTP/1.1
+#      Host: server.example.com
+#      Authorization: Bearer mF_9.B5f-4.1JqM
+    @classmethod
+    async def get_salary(cls, token: str):
+        print(token)
+        try:
+            pury_token = token.split(sep="Authorization: Bearer")[1]
+        
+        return None
 
