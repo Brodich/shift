@@ -1,4 +1,3 @@
-from typing import Tuple
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text  
@@ -11,27 +10,6 @@ from config import Config
 
 
 class UserRepository:
-    @classmethod
-    async def add_task(cls, task: STaskAdd) -> int:
-        async with new_session() as session:
-            data = task.model_dump()
-            new_task = TaskOrm(**data)
-            session.add(new_task)
-            await session.flush()
-            await session.commit()
-            return new_task.id
-
-
-    @classmethod
-    async def get_tasks(cls) -> list[STask]:
-        async with new_session() as session:
-            query = select(TaskOrm)
-            result = await session.execute(query)
-            task_models = result.scalars().all()
-            tasks = [STask.model_validate(task_model) for task_model in task_models]
-            return tasks
-
-
     @classmethod
     async def add_user(cls, user: SUserAdd) -> SUser:
         async with new_session() as session:
@@ -65,7 +43,6 @@ class UserRepository:
             result = await session.execute(query)
             users_models = result.scalars().all()
             user = [SUser.model_validate(user_model) for user_model in users_models]
-            # print(user)
             if user == []:
                 raise HTTPException(status_code=401, detail="Incorrect login or password")
             payload = {
@@ -82,19 +59,17 @@ class UserRepository:
             payload = jwt.decode(pure_token, Config.SECRET_KEY, algorithms=["HS256"])
             return payload["login"]
         except:
-            print("except")
             raise HTTPException(status_code=498, detail="Expired or invalid token") 
 
 
     @classmethod
-    async def get_salary(cls, token: str) -> Tuple[str, float, str]:
+    async def get_salary(cls, token: str) -> dict:
         try:
             pure_token = token.split(sep="Authorization: Bearer ")[1]
         except:
             raise HTTPException(status_code=498, detail="Expired or invalid token") 
         if pure_token:
             login = await cls.verify_token(pure_token)
-            print("login = ", login)
             if login:
                 async with new_session() as session:
                     query = select(UserOrm).where(
@@ -102,6 +77,7 @@ class UserRepository:
                     result = await session.execute(query)
                     user_model = result.scalars().first()
                     user = SUser.model_validate(user_model)
-                    print("query", user)
-                    return ["login: " + user.login, "salary: " + str(user.salary), "next_raise_date: " + user.next_raise_date]
+                    # print("query", user)
+                    return {"login:": user.login, "salary": user.salary, "next_raise_date": user.next_raise_date}
+
 # eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6IjEiLCJleHBpcmVzIjoiMjAyNC0wNi0wOFQwNjo0Mzo1Mi45OTI2NTkifQ.mlVv8PNVO1OLxWQvkctZlVTbbJB4PLrngjGIYHee3U8
