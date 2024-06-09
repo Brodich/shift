@@ -1,17 +1,9 @@
-from datetime import datetime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 
 class Model(DeclarativeBase):
     pass
-
-
-class TaskOrm(Model):
-    __tablename__ = "tasks"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str | None]
 
 
 class UserOrm(Model):
