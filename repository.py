@@ -20,16 +20,6 @@ class UserRepository:
             return new_user
 
 
-    # @classmethod
-    # async def get_users(cls) -> list[SUser]:
-    #     async with new_session() as session:
-    #         query = select(UserOrm)
-    #         result = await session.execute(query)
-    #         users_models = result.scalars().all()
-    #         users = [SUser.model_validate(user_model) for user_model in users_models]
-    #         return users
-
-
     @classmethod
     async def login(cls, login_data: SLoginData) -> str:
         login = login_data.login
