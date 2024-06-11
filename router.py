@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends
 from repository import UserRepository
-from schemas import SUser, SUserAdd, SLoginData
+from schemas import SUser, SUserAdd
+
+from fastapi.security import OAuth2PasswordRequestForm
+from typing import Annotated
 
 
 router = APIRouter(
@@ -14,12 +17,11 @@ async def add_user(user: SUserAdd = Depends()) -> SUser:
     return new_user
 
 @router.post("/login")
-async def login(login_data: SLoginData = Depends()) -> dict:
-    token = await UserRepository.login(login_data)
-    return {"token": token}
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    token = await UserRepository.login(form_data)
+    return {"access_token": token, "token_type": "bearer"}
 
 @router.get("/salary")
-async def get_salary(token: str = Header(...)) -> dict:
-    # print(token)
-    data_salary = await UserRepository.get_salary(token)
+async def get_salary(current_user: Annotated[SUserAdd, Depends(UserRepository.get_current_username)],):
+    data_salary = await UserRepository.get_salary(current_user)
     return data_salary

@@ -9,7 +9,7 @@ class Model(DeclarativeBase):
 class UserOrm(Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
-    login: Mapped[str] 
+    username: Mapped[str] 
     password: Mapped[str]
     salary: Mapped[float]
     next_raise_date: Mapped[str]

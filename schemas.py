@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class SUserAdd(BaseModel):
-    login: str
+    username: str
     password: str
     salary: int
     next_raise_date: str
@@ -14,5 +14,5 @@ class SUser(SUserAdd):
 
 
 class SLoginData(BaseModel):
-    login: str
+    username: str
     password: str
