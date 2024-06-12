@@ -14,14 +14,21 @@
 
 Add user if it needs
 
-<img src="images/add_user.png" alt="" width="700"/>
+<img src="images/add_user2.png" alt="" width="700"/>
 
-Put our login and password and get `<token>`
+Click to the button Authorize.
 
-<img src="images/login.png" alt="" width="700"/>
+<img src="images/login2.png" alt="" width="700"/>
 
-Put token, if he valid we get private data.
+Write your login and password to the form.
 
-`Authorization: Bearer <token>` 
+<img src="images/login2form.png" alt="" width="700"/>
 
-<img src="images/salary.png" alt="" width="700"/>
+If all good you will be see this window.
+
+<img src="images/login2success.png" alt="" width="700"/>
+
+Now we can get private data from server. Click to the `Try it out` and `Execute` 
+
+<img src="images/tryitout.png" alt="" width="700"/>
+<img src="images/getsalary.png" alt="" width="700"/>

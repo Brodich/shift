@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-from database import create_tables, delete_tables 
-
+from database import create_tables, delete_tables
 from router import router as users_router
 
 

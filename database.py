@@ -9,7 +9,7 @@ class Model(DeclarativeBase):
 class UserOrm(Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] 
+    username: Mapped[str]
     password: Mapped[str]
     salary: Mapped[float]
     next_raise_date: Mapped[str]
@@ -20,9 +20,11 @@ new_session = async_sessionmaker(engine, expire_on_commit=False)
 
 Base = DeclarativeBase()
 
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Model.metadata.create_all)
+
 
 async def delete_tables():
     async with engine.begin() as conn:
