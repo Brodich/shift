@@ -1,11 +1,16 @@
-from fastapi import HTTPException
-from sqlalchemy import select  
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import select
+from typing import Annotated
 import datetime
 import jwt
 
 from database import UserOrm, new_session
-from schemas import SUser, SUserAdd, SLoginData
+from schemas import SUser, SUserAdd
 from config import Config
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 class UserRepository:
@@ -19,62 +24,65 @@ class UserRepository:
             await session.commit()
             return new_user
 
-
-    # @classmethod
-    # async def get_users(cls) -> list[SUser]:
-    #     async with new_session() as session:
-    #         query = select(UserOrm)
-    #         result = await session.execute(query)
-    #         users_models = result.scalars().all()
-    #         users = [SUser.model_validate(user_model) for user_model in users_models]
-    #         return users
-
-
     @classmethod
-    async def login(cls, login_data: SLoginData) -> str:
-        login = login_data.login
+    async def login(cls, login_data: OAuth2PasswordRequestForm) -> str:
+        username = login_data.username
         password = login_data.password
         async with new_session() as session:
             query = select(UserOrm).where(
-                (UserOrm.login == login) 
+                (UserOrm.username == username)
                 & (UserOrm.password == password))
 
             result = await session.execute(query)
-            users_models = result.scalars().all()
-            user = [SUser.model_validate(user_model) for user_model in users_models]
+            users_model = result.scalars().first()
+            user = SUser.model_validate(users_model)
             if user == []:
-                raise HTTPException(status_code=401, detail="Incorrect login or password")
+                raise HTTPException(status_code=401,
+                                    detail="Incorrect username or password")
             payload = {
-                "login": login,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=Config.JWT_EXPIRATION_DELTA)
+                "username": username,
+                "exp": datetime.datetime.utcnow()
+                + datetime.timedelta(minutes=Config.JWT_EXPIRATION_DELTA)
             }
             token = jwt.encode(payload, Config.SECRET_KEY, algorithm="HS256")
         return token
 
+    @classmethod
+    async def verify_token(cls, token: str) -> str:
+        try:
+            payload = jwt.decode(token,
+                                 Config.SECRET_KEY,
+                                 algorithms=["HS256"])
+            return payload["username"]
+        except Exception:
+            raise HTTPException(status_code=498,
+                                detail="Expired or invalid token")
 
     @classmethod
-    async def verify_token(cls, pure_token: str) -> str:
-        try:
-            payload = jwt.decode(pure_token, Config.SECRET_KEY, algorithms=["HS256"])
-            return payload["login"]
-        except:
-            raise HTTPException(status_code=498, detail="Expired or invalid token") 
-
+    async def get_current_username(cls,
+                                   token: Annotated[
+                                       str,
+                                       Depends(oauth2_scheme)]):
+        username = await cls.verify_token(token)
+        async with new_session() as session:
+            query = select(UserOrm).where(UserOrm.username == username)
+            result = await session.execute(query)
+            user_model = result.scalars().first()
+            if not user_model:
+                raise HTTPException(status_code=401,
+                                    detail="Invalid authentication")
+            user = SUser.model_validate(user_model)
+            return user.username
 
     @classmethod
-    async def get_salary(cls, token: str) -> dict:
-        try:
-            pure_token = token.split(sep="Authorization: Bearer ")[1]
-        except:
-            raise HTTPException(status_code=498, detail="Expired or invalid token") 
-        if pure_token:
-            login = await cls.verify_token(pure_token)
-            if login:
-                async with new_session() as session:
-                    query = select(UserOrm).where(
-                    (UserOrm.login == login))
-                    result = await session.execute(query)
-                    user_model = result.scalars().first()
-                    user = SUser.model_validate(user_model)
-                    # print("query", user)
-                    return {"login:": user.login, "salary": user.salary, "next_raise_date": user.next_raise_date}
+    async def get_salary(cls, username: str) -> dict:
+        async with new_session() as session:
+            query = select(UserOrm).where(UserOrm.username == username)
+            result = await session.execute(query)
+            user_model = result.scalars().first()
+            if not user_model:
+                raise HTTPException(status_code=404, detail="User not found")
+            user = SUser.model_validate(user_model)
+            return {"username": user.username,
+                    "salary": user.salary,
+                    "next_raise_date": user.next_raise_date}
